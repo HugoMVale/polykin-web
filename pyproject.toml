@@ -9,7 +9,7 @@ packages = [{ include = "src" }]
 keywords = ["polymer", "polymerization", "kinetics", "reaction"]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "3.10"
 streamlit = "^1.33.0"
 numpy = "^1.26.4"
 polykin = { git = "ssh://git@github.com/HugoMVale/polykin.git" }
