@@ -957,13 +957,13 @@ xmp = ["defusedxml"]
 
 [[package]]
 name = "polykin"
-version = "0.5.1"
+version = "0.5.2"
 description = "A polymerization kinetics library."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "polykin-0.5.1-py3-none-any.whl", hash = "sha256:a31923dbf915cf581288c553ba1e5640df070179e7e136a55b203416341d59fa"},
-    {file = "polykin-0.5.1.tar.gz", hash = "sha256:d9490e1330ba6f807c91a55a062307bdd0722817935fd0d2426593aec54bb93b"},
+    {file = "polykin-0.5.2-py3-none-any.whl", hash = "sha256:c6e079e1783d7a8af890d599f1011f3c4e704f567183f1c2876c18701405a735"},
+    {file = "polykin-0.5.2.tar.gz", hash = "sha256:1e349a99371db15da7a431abc46fb17676bfd067ddb9055e83e03ed834127c30"},
 ]
 
 [package.dependencies]
@@ -1568,4 +1568,4 @@ watchmedo = ["PyYAML (>=3.10)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "ddc797df80b656db0d3430f80d121255b867e095c03b551c442f5b980c00032d"
+content-hash = "dc94ccbc22bd88ca4ba6497d710b4f93d2c34584122d4ed0624b214e72e2b121"
