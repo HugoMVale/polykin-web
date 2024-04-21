@@ -12,7 +12,7 @@ keywords = ["polymer", "polymerization", "kinetics", "reaction"]
 python = "^3.10"
 streamlit = "^1.33.0"
 numpy = "^1.26.4"
-polykin = "^0.5.1"
+polykin = "^0.5.2"
 
 
 [build-system]

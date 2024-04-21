@@ -11,8 +11,8 @@ st.set_page_config(
     initial_sidebar_state="expanded")
 
 # Cache stuff
-if "init" not in state:
-    state.init = True
+if "page" not in state or state.page != 2:
+    state.page = 2
     state.options_fit_methods = {
         "Nonlinear least squares": "NLLS",
         "Orthogonal distance regression": "ODR"
