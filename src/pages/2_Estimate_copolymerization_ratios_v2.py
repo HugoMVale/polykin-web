@@ -6,6 +6,7 @@ from matplotlib.figure import Figure
 from polykin.copolymerization.binary import (inst_copolymer_binary,
                                              monomer_drift_binary)
 from polykin.copolymerization.fitting import fit_reactivity_ratios
+from polykin.copolymerization.fitting_experimental import fit_copo, CopoDataset_Ff, CopoDataset_fx, CopoDataset_Fx
 from streamlit import session_state as state
 
 import utils
@@ -16,8 +17,8 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded")
 
-if "page" not in state or state.page != 3:
-    state.page = 3
+if "page" not in state or state.page != 2:
+    state.page = 2
     state.data = {"Ff": [], "fx": [], "Fx": []}
     state.counter = 0
 
@@ -253,6 +254,7 @@ if run_fit:
     # If we only have Ff data
     if number_sets['Ff'] > 0 and (number_sets['fx'] + number_sets['Fx']) == 0:
 
+        # Pack data
         datasets = state.data['Ff']
         f1 = []
         F1 = []
@@ -265,6 +267,8 @@ if run_fit:
             scale_f1.extend(ds.data['scale_f1'].values/(ds.weight + 1e-10))
             scale_F1.extend(ds.data['scale_F1'].values/(ds.weight + 1e-10))
         ndata = len(f1)
+
+        # Call fitter
         try:
             JCR_method = []
             if JCR_linear:
@@ -287,36 +291,107 @@ if run_fit:
                     "Oops, we have a problem. Check the data and/or turn off the exact JCR.")
                 with st.expander("Error message"):
                     st.write(e.args)
+
+        if res:
+
+            table_results = {
+                "Parameter": ["r₁", "r₂"],
+                "Point estimate": [res.r1, res.r2],
+                "Standard error": [res.se_r1, res.se_r2],
+                f"Confidence interval {confidence_level}%": [res.ci_r1, res.ci_r2]
+            }
+
+            with plot_zone.container():
+                update_plots((res.r1, res.r2))
+
+            with column[2]:
+
+                st.write("Parameter estimates and confidence intervals")
+                st.dataframe(table_results, hide_index=True)
+
+                if ndata > 2:
+                    st.write("Covariance matrix")
+                    st.dataframe(pd.DataFrame(res.cov, columns=["r₁", "r₂"],
+                                              index=["r₁", "r₂"]))
+
+                JCR = res.JCR
+                if JCR and JCR[0]:
+                    st.write("Joint confidence region")
+                    st.pyplot(JCR[0])
+
+    # Multidata case
     else:
-        with info_zone.container():
-            st.error("Sorry, not yet implemented! Coming soon...")
 
-    if res:
+        # Pack data
+        data_Ff = []
+        data_fx = []
+        data_Fx = []
+        if state.data['Ff']:
+            for ds in state.data['Ff']:
+                ds.data.dropna(inplace=True)
+                dsi = CopoDataset_Ff(
+                    name=ds.name,
+                    f1=ds.data['f1'],
+                    F1=ds.data['F1'],
+                    scale_f=ds.data['scale_f1'],
+                    scale_F=ds.data['scale_F1'],
+                    weight=ds.weight)
+                data_Ff.append(dsi)
 
-        table_results = {
-            "Parameter": ["r₁", "r₂"],
-            "Point estimate": [res.r1, res.r2],
-            "Standard error": [res.se_r1, res.se_r2],
-            f"Confidence interval {confidence_level}%": [res.ci_r1, res.ci_r2]
-        }
+        if state.data['fx']:
+            for ds in state.data['fx']:
+                ds.data.dropna(inplace=True)
+                dsi = CopoDataset_fx(
+                    name=ds.name,
+                    f10=ds.f10,
+                    x=ds.data['x'],
+                    f1=ds.data['f1'],
+                    scale_x=ds.data['scale_f1']*0,  # temporary !!!
+                    scale_f=ds.data['scale_f1'],
+                    weight=ds.weight)
+                data_fx.append(dsi)
 
-        with plot_zone.container():
-            update_plots((res.r1, res.r2))
+        if state.data['Fx']:
+            for ds in state.data['Fx']:
+                ds.data.dropna(inplace=True)
+                dsi = CopoDataset_Fx(
+                    name=ds.name,
+                    f10=ds.f10,
+                    x=ds.data['x'],
+                    F1=ds.data['F1'],
+                    scale_x=ds.data['scale_F1']*0,  # temporary !!!
+                    scale_F=ds.data['scale_F1'],
+                    weight=ds.weight)
+                data_Fx.append(dsi)
 
-        with column[2]:
+        try:
+            res = fit_copo(data_Ff=data_Ff,
+                           data_fx=data_fx,
+                           data_Fx=data_Fx,
+                           initial_guess=tuple(ratios_guess),
+                           alpha=(1. - confidence_level/100)
+                           )
+        except ValueError as e:
+            with info_zone.container():
+                st.error(
+                    "Oopsie, we have a problem...")
+                with st.expander("Error message"):
+                    st.write(e.args)
 
-            st.write("Parameter estimates and confidence intervals")
-            st.dataframe(table_results, hide_index=True)
+        if res is not None:
 
-            if ndata > 2:
-                st.write("Covariance matrix")
-                st.dataframe(pd.DataFrame(res.cov, columns=["r₁", "r₂"],
-                                          index=["r₁", "r₂"]))
+            table_results = {
+                "Parameter": ["r₁", "r₂"],
+                "Point estimate": [res[0], res[1]],
+            }
 
-            JCR = res.JCR
-            if JCR and JCR[0]:
-                st.write("Joint confidence region")
-                st.pyplot(JCR[0])
+            with plot_zone.container():
+                update_plots((res[0], res[1]))
+
+            with column[2]:
+
+                st.write("Parameter estimates and confidence intervals")
+                st.dataframe(table_results, hide_index=True)
 
 # %% Save state
 # state.ratios_guess_last = ratios_guess

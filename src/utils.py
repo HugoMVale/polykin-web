@@ -25,8 +25,10 @@ latex_symbols = {
 # %% Data stuff
 
 default_tables = {
-    "Ff": pd.DataFrame(data={"f1": [0.5], "F1": [0.5],
-                             "scale_f1": [1.], "scale_F1": [1.]},
+    "Ff": pd.DataFrame(data={"f1": [0.186, 0.299, 0.527, 0.600, 0.700, 0.798],
+                             "F1": [0.196, 0.279, 0.415, 0.473, 0.542, 0.634],
+                             "scale_f1": [0.01]*6,
+                             "scale_F1": [0.05]*6},
                        dtype=np.float64),
     "fx": pd.DataFrame(data={"x": [0.], "f1": [0.5], "scale_f1": [1.]},
                        dtype=np.float64),
